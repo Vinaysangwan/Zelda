@@ -30,3 +30,8 @@ struct Sprite
     : texture(texture), rect(rect)
   {}
 };
+
+struct RenderLayer
+{
+  int layer;
+};

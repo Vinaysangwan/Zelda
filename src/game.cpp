@@ -2,17 +2,7 @@
 #include "game.hpp"
 #include "config.hpp"
 #include "assetManager.hpp"
-
-// #############################################################################
-//                           Functions(Internal)
-// #############################################################################
-void render_entity(const entt::registry& reg, const entt::entity entity)
-{
-  const Sprite& sprite = reg.get<Sprite>(entity); 
-  const Position& position = reg.get<Position>(entity);
-
-  DrawTextureRec(*sprite.texture, sprite.rect, {position.x, position.y}, WHITE);
-}
+#include "systems.hpp"
 
 // #############################################################################
 //                           Functions
@@ -26,15 +16,26 @@ void game_init(GameState *gameState)
     entt::entity &background = gameState->background;
     background = reg.create();
     reg.emplace<Sprite>(background, get_sprite(SPRITE_BACKGROUND));
-    reg.emplace<Position>(background, Position{0, 0});
+    reg.emplace<Position>(background, 0, 0);
+    reg.emplace<RenderLayer>(background, 0);
   }
   
   // init player
   entt::entity &player = gameState->player;
   player = reg.create();
-  Sprite& playerSprite = reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_UP));
+  Sprite& playerSprite = reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_DOWN));
   Position& playerPos = reg.emplace<Position>(player, 100, 100);
-  Velocity& playerVel = reg.emplace<Velocity>(player, 2, 2);
+  reg.emplace<Velocity>(player, 0, 0);
+  reg.emplace<RenderLayer>(player, 1);
+
+  // init example entity
+  {
+    entt::entity example = reg.create();
+    reg.emplace<Sprite>(example, get_sprite(SPRITE_PLAYER_UP));
+    reg.emplace<Position>(example, playerPos);
+    reg.emplace<Velocity>(example, 1, 1);
+    reg.emplace<RenderLayer>(example, 1);
+  }
 
   // init gameCamera
   Camera2D &gameCamera = gameState->gameCamera;
@@ -58,27 +59,33 @@ void game_update(GameState *gameState, float dt)
   Velocity &playerVel = reg.get<Velocity>(player);
   Sprite &playerSprite = reg.get<Sprite>(player);
   {
-    if (IsKeyDown(KEY_W)) 
+    playerVel.x = 0.0f;
+    playerVel.y = 0.0f;
+    
+    if (IsKeyDown(KEY_W))
     {
-      playerPos.y -= playerVel.y; 
+      playerVel.y = -2;
       playerSprite = get_sprite(SPRITE_PLAYER_UP);
     }
-    if (IsKeyDown(KEY_S)) 
+    if (IsKeyDown(KEY_S))
     {
-      playerPos.y += playerVel.y; 
+      playerVel.y = 2;
       playerSprite = get_sprite(SPRITE_PLAYER_DOWN);
     }
-    if (IsKeyDown(KEY_A)) 
+    if (IsKeyDown(KEY_A))
     {
-      playerPos.x -= playerVel.x; 
+      playerVel.x = -2;
       playerSprite = get_sprite(SPRITE_PLAYER_LEFT);
     }
-    if (IsKeyDown(KEY_D)) 
+    if (IsKeyDown(KEY_D))
     {
-      playerPos.x += playerVel.x; 
+      playerVel.x = 2;
       playerSprite = get_sprite(SPRITE_PLAYER_RIGHT);
     }
   }
+
+  // move entities
+  movement_system(reg);
 
   // update camera
   Camera2D &gameCamera = gameState->gameCamera;
@@ -89,19 +96,18 @@ void game_update(GameState *gameState, float dt)
 
 void game_render(GameState *gameState)
 {
-  const entt::registry &reg = gameState->reg;
+  entt::registry &reg = gameState->reg;
   
   BeginMode2D(gameState->gameCamera);
   {
-    // render background
-    render_entity(reg, gameState->background);
-
-    // render player
-    render_entity(reg, gameState->player);
+    // render entity
+    render_system(reg);
   }
   EndMode2D();
 }
 
 void game_cleanup(GameState *gameState)
 {
+  // clear entity register
+  gameState->reg.clear();
 }
