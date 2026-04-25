@@ -6,6 +6,14 @@
 // #############################################################################
 //                           Textures
 // #############################################################################
+enum TextureID
+{
+  TEXTURE_PLAYER,
+  TEXTURE_BACKGROUND,
+
+  TEXTURE_COUNT
+};
+
 enum SpriteID
 {
   // player
@@ -20,6 +28,7 @@ enum SpriteID
   SPRITE_COUNT
 };
 
-void load_textures();
-void unload_textures();
-Sprite get_sprite(SpriteID spriteID);
+void textures_load();
+void textures_unload();
+Texture2D *get_texture(TextureID textureID);
+const Sprite &get_sprite(SpriteID spriteID);

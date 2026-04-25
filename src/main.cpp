@@ -13,7 +13,7 @@ int main()
   SetTargetFPS(FPS);
 
   // Load Textures
-  load_textures();
+  textures_load();
 
   // init game
   GameState gameState = {};
@@ -46,6 +46,6 @@ int main()
 
   // cleanup
   game_cleanup(&gameState);
-  unload_textures();
+  textures_unload();
   CloseWindow();
 }

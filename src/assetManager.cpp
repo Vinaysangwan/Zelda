@@ -3,23 +3,8 @@
 // #############################################################################
 //                           Textures
 // #############################################################################
-enum TextureID
-{
-  TEXTURE_PLAYER,
-  TEXTURE_BACKGROUND,
-
-  TEXTURE_COUNT
-};
-
-// statics
 static Texture2D TEXTURES[TEXTURE_COUNT];
 static Sprite SPRITES[SPRITE_COUNT];
-
-// functions internal
-Texture2D *get_texture(TextureID textureID)
-{
-  return &TEXTURES[textureID];
-}
 
 void load_sprites()
 {
@@ -32,8 +17,7 @@ void load_sprites()
   SPRITES[SPRITE_BACKGROUND]    = Sprite(get_texture(TEXTURE_BACKGROUND));
 }
 
-// functions
-void load_textures()
+void textures_load()
 {
   // textures
   TEXTURES[TEXTURE_PLAYER] = LoadTexture("assets/textures/player-sheet.png");
@@ -43,7 +27,7 @@ void load_textures()
   load_sprites();
 }
 
-void unload_textures()
+void textures_unload()
 {
   for (Texture2D &tex : TEXTURES)
   {
@@ -56,7 +40,12 @@ void unload_textures()
   }
 }
 
-Sprite get_sprite(SpriteID spriteID)
+Texture2D *get_texture(TextureID textureID)
+{
+  return &TEXTURES[textureID];
+}
+
+const Sprite &get_sprite(SpriteID spriteID)
 {
   return SPRITES[spriteID];
 }
