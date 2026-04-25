@@ -18,7 +18,7 @@ void game_init(GameState *gameState)
     background = reg.create();
     reg.emplace<Sprite>(background, get_sprite(SPRITE_BACKGROUND));
     reg.emplace<Position>(background, 0, 0);
-    reg.emplace<RenderLayer>(background, 0);
+    reg.emplace<BackgroundLayerTag>(background);
   }
   
   // init player
@@ -29,7 +29,7 @@ void game_init(GameState *gameState)
     reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_DOWN));
     reg.emplace<Position>(player, 100, 100);
     reg.emplace<Velocity>(player, 0, 0);
-    reg.emplace<RenderLayer>(player, 1);
+    reg.emplace<GameLayerTag>(player);
   }
 
   // init example entity
@@ -38,7 +38,7 @@ void game_init(GameState *gameState)
     reg.emplace<Sprite>(example, get_sprite(SPRITE_PLAYER_UP));
     reg.emplace<Position>(example, 100, 10);
     reg.emplace<Velocity>(example, 1, 1);
-    reg.emplace<RenderLayer>(example, 1);
+    reg.emplace<GameLayerTag>(example);
   }
 
   // init gameCamera

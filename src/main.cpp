@@ -10,7 +10,7 @@ int main()
 {
   // init window
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Zelda");
-  SetTargetFPS(FPS);
+  // SetTargetFPS(FPS);
 
   // Load Textures
   textures_load();

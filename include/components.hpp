@@ -2,6 +2,16 @@
 
 #include <raylib.h>
 
+// #############################################################################
+//                           Tags
+// #############################################################################
+struct BackgroundLayerTag {};
+struct GameLayerTag {};
+struct UILayerTag {};
+
+// #############################################################################
+//                           Components
+// #############################################################################
 struct Position
 {
   float x = 0.0f;
@@ -29,9 +39,4 @@ struct Sprite
   Sprite(Texture2D *texture, const Rectangle &rect)
     : texture(texture), rect(rect)
   {}
-};
-
-struct RenderLayer
-{
-  int layer;
 };
