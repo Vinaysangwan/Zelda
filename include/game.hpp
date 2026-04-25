@@ -10,14 +10,11 @@ struct GameState
 {
   entt::registry reg;
 
-  // textures
-  Texture2D playerTexture;
-  Texture2D backgroundTexture;
-
   // camera
   Camera2D gameCamera;
   
   // entities
+  entt::entity background;
   entt::entity player;
 };
 

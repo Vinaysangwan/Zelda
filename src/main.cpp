@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "config.hpp"
 #include "game.hpp"
+#include "assetManager.hpp"
 
 // #############################################################################
 //                           Functions
@@ -10,6 +11,9 @@ int main()
   // init window
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Zelda");
   SetTargetFPS(FPS);
+
+  // Load Textures
+  load_textures();
 
   // init game
   GameState gameState = {};
@@ -42,5 +46,6 @@ int main()
 
   // cleanup
   game_cleanup(&gameState);
+  unload_textures();
   CloseWindow();
 }

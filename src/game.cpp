@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "game.hpp"
 #include "config.hpp"
+#include "assetManager.hpp"
 
 // #############################################################################
 //                           Functions(Internal)
@@ -20,20 +21,18 @@ void game_init(GameState *gameState)
 {
   entt::registry& reg = gameState->reg;
 
-  // init textures
-  Texture2D &playerTexture = gameState->playerTexture;
+  // init background
   {
-    // background
-    gameState->backgroundTexture = LoadTexture("assets/textures/background.png");
-
-    // player
-    playerTexture = LoadTexture("assets/textures/player-sheet.png");
+    entt::entity &background = gameState->background;
+    background = reg.create();
+    reg.emplace<Sprite>(background, get_sprite(SPRITE_BACKGROUND));
+    reg.emplace<Position>(background, Position{0, 0});
   }
   
   // init player
   entt::entity &player = gameState->player;
   player = reg.create();
-  Sprite& playerSprite = reg.emplace<Sprite>(player, &playerTexture, Rectangle{12, 0, 12, 18});
+  Sprite& playerSprite = reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_UP));
   Position& playerPos = reg.emplace<Position>(player, 100, 100);
   Velocity& playerVel = reg.emplace<Velocity>(player, 2, 2);
 
@@ -57,11 +56,28 @@ void game_update(GameState *gameState, float dt)
   entt::entity &player = gameState->player;
   Position &playerPos = reg.get<Position>(player);
   Velocity &playerVel = reg.get<Velocity>(player);
+  Sprite &playerSprite = reg.get<Sprite>(player);
   {
-    if (IsKeyDown(KEY_W)) playerPos.y -= playerVel.y;
-    if (IsKeyDown(KEY_S)) playerPos.y += playerVel.y;
-    if (IsKeyDown(KEY_A)) playerPos.x -= playerVel.x;
-    if (IsKeyDown(KEY_D)) playerPos.x += playerVel.x;
+    if (IsKeyDown(KEY_W)) 
+    {
+      playerPos.y -= playerVel.y; 
+      playerSprite = get_sprite(SPRITE_PLAYER_UP);
+    }
+    if (IsKeyDown(KEY_S)) 
+    {
+      playerPos.y += playerVel.y; 
+      playerSprite = get_sprite(SPRITE_PLAYER_DOWN);
+    }
+    if (IsKeyDown(KEY_A)) 
+    {
+      playerPos.x -= playerVel.x; 
+      playerSprite = get_sprite(SPRITE_PLAYER_LEFT);
+    }
+    if (IsKeyDown(KEY_D)) 
+    {
+      playerPos.x += playerVel.x; 
+      playerSprite = get_sprite(SPRITE_PLAYER_RIGHT);
+    }
   }
 
   // update camera
@@ -78,7 +94,7 @@ void game_render(GameState *gameState)
   BeginMode2D(gameState->gameCamera);
   {
     // render background
-    DrawTexture(gameState->backgroundTexture, 0, 0, WHITE);
+    render_entity(reg, gameState->background);
 
     // render player
     render_entity(reg, gameState->player);
@@ -88,7 +104,4 @@ void game_render(GameState *gameState)
 
 void game_cleanup(GameState *gameState)
 {
-  // unload textures
-  UnloadTexture(gameState->backgroundTexture);
-  UnloadTexture(gameState->playerTexture);
 }
