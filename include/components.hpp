@@ -12,10 +12,11 @@ struct UILayerTag {};
 // #############################################################################
 //                           Components
 // #############################################################################
-struct Position
+struct Transform2D
 {
-  float x = 0.0f;
-  float y = 0.0f;
+  Vector2 pos = {0.0f, 0.0f};
+  Vector2 scale = {1.0f, 1.0f};
+  float rot = 0.0f;
 };
 
 struct Velocity

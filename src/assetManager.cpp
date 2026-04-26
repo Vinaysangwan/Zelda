@@ -9,11 +9,15 @@ static Sprite SPRITES[SPRITE_COUNT];
 void load_sprites()
 {
   // player
-  SPRITES[SPRITE_PLAYER_DOWN]   = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12, 0, 12, 18});
+  SPRITES[SPRITE_PLAYER_DOWN]   = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12,  0, 12, 18});
   SPRITES[SPRITE_PLAYER_LEFT]   = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12, 18, 12, 18});
-  SPRITES[SPRITE_PLAYER_RIGHT]  = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12, 2 * 18, 12, 18});
-  SPRITES[SPRITE_PLAYER_UP]     = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12, 3 * 18, 12, 18});
+  SPRITES[SPRITE_PLAYER_RIGHT]  = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12, 36, 12, 18});
+  SPRITES[SPRITE_PLAYER_UP]     = Sprite(get_texture(TEXTURE_PLAYER), Rectangle{12, 54, 12, 18});
 
+  // bird
+  SPRITES[SPRITE_BIRD]          = Sprite(get_texture(TEXTURE_BIRD));
+
+  // background
   SPRITES[SPRITE_BACKGROUND]    = Sprite(get_texture(TEXTURE_BACKGROUND));
 }
 
@@ -22,6 +26,7 @@ void textures_load()
   // textures
   TEXTURES[TEXTURE_PLAYER] = LoadTexture("assets/textures/player-sheet.png");
   TEXTURES[TEXTURE_BACKGROUND] = LoadTexture("assets/textures/background.png");
+  TEXTURES[TEXTURE_BIRD] = LoadTexture("assets/textures/parrot.png");
 
   // sprites
   load_sprites();

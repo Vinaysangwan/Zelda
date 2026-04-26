@@ -17,8 +17,8 @@ void game_init(GameState *gameState)
     
     background = reg.create();
     reg.emplace<Sprite>(background, get_sprite(SPRITE_BACKGROUND));
-    reg.emplace<Position>(background, 0, 0);
     reg.emplace<BackgroundLayerTag>(background);
+    reg.emplace<Transform2D>(background);
   }
   
   // init player
@@ -27,33 +27,48 @@ void game_init(GameState *gameState)
 
     player = reg.create();
     reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_DOWN));
-    reg.emplace<Position>(player, 100, 100);
-    reg.emplace<Velocity>(player, 0, 0);
     reg.emplace<GameLayerTag>(player);
+    reg.emplace<Transform2D>(player, Transform2D{
+      .pos = {100, 100},
+      .scale = {4, 4}
+    });
+    reg.emplace<Velocity>(player, 2, 2);
   }
 
   // init example entity
   {
     entt::entity example = reg.create();
     reg.emplace<Sprite>(example, get_sprite(SPRITE_PLAYER_UP));
-    reg.emplace<Position>(example, 100, 10);
-    reg.emplace<Velocity>(example, 1, 1);
     reg.emplace<GameLayerTag>(example);
+    reg.emplace<Transform2D>(example, Transform2D{
+      .pos = {50, 50},
+      .scale = {4, 4}
+    });
+    reg.emplace<Velocity>(example, 1, 1);
   }
 
-  // init gameCamera
+  // init bird
+  {
+    entt::entity bird = reg.create();
+    reg.emplace<Sprite>(bird, get_sprite(SPRITE_BIRD));
+    reg.emplace<GameLayerTag>(bird);
+    reg.emplace<Transform2D>(bird, Transform2D{
+      .pos = {100, 100}
+    });
+  }
+
+  // init game camera
   {
     Camera2D &gameCamera = gameState->gameCamera;
 
-    Sprite &playerSprite = reg.get<Sprite>(gameState->player);
-    Position &playerPos = reg.get<Position>(gameState->player);
+    Transform2D &playerTransform = reg.get<Transform2D>(gameState->player);
 
     gameCamera.offset = {
-      .x = (WINDOW_WIDTH - playerSprite.rect.width) / 3, 
-      .y = (WINDOW_HEIGHT - playerSprite.rect.height) / 2
+      .x = WINDOW_WIDTH / 2.0f,
+      .y = WINDOW_HEIGHT / 2.0f
     };
-    gameCamera.target = {playerPos.x, playerPos.y};
-    gameCamera.zoom = 4.0f;
+    gameCamera.target = playerTransform.pos;
+    gameCamera.zoom = 1.0f;
   }
 }
 
@@ -95,7 +110,7 @@ void game_update(GameState *gameState, float dt)
   // update example
   {
     Velocity &exampleVel = reg.get<Velocity>(entt::entity(2));
-    Position &examplePos = reg.get<Position>(entt::entity(2));
+    Vector2 &examplePos = reg.get<Transform2D>(entt::entity(2)).pos;
 
     if (examplePos.x <= 0 || examplePos.x >= 200)
     {
@@ -113,9 +128,9 @@ void game_update(GameState *gameState, float dt)
   // update camera
   {
     Camera2D &gameCamera = gameState->gameCamera;
-    Position &playerPos = reg.get<Position>(gameState->player);
+    Vector2 &playerPos = reg.get<Transform2D>(gameState->player).pos;
 
-    gameCamera.target = {playerPos.x, playerPos.y};
+    gameCamera.target = playerPos;
   }
 }
 
@@ -125,7 +140,7 @@ void game_render(GameState *gameState)
   
   BeginMode2D(gameState->gameCamera);
   {
-    // render entity
+    // render entities
     render_system(reg);
   }
   EndMode2D();
