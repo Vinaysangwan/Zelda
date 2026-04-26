@@ -16,13 +16,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/vendor/raylib/include
   ${CMAKE_SOURCE_DIR}/vendor/entt
+  ${CMAKE_SOURCE_DIR}/vendor/box2d/include
 )
 
 # sub directories
 add_subdirectory(src)
+add_subdirectory(vendor/box2d)
 
 # libs
 target_link_libraries(${PROJECT_NAME} PRIVATE
   ${CMAKE_SOURCE_DIR}/vendor/raylib/lib/raylib.lib
   winmm
+  box2d
 )

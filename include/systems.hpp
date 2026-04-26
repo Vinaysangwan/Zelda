@@ -6,5 +6,7 @@
 // #############################################################################
 //                           Functions
 // #############################################################################
-void render_system(entt::registry &reg);
-void movement_system(entt::registry &reg);
+void render_entities(entt::registry &reg);
+void render_debug_colliders(entt::registry &reg);
+void move_entities(entt::registry &reg);
+void update_entity_physics(entt::registry &reg);

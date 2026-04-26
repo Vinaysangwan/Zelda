@@ -10,7 +10,7 @@ int main()
 {
   // init window
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Zelda");
-  // SetTargetFPS(FPS);
+  SetTargetFPS(FPS);
 
   // Load Textures
   textures_load();
@@ -25,6 +25,9 @@ int main()
   {
     // get delta time
     float delta = GetFrameTime();
+
+    // poll inputs
+    game_handle_key_pressed(&gameState);
     
     // update
     upsTimer += delta;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <raylib.h>
+#include <box2d/box2d.h>
 
 // #############################################################################
 //                           Tags
@@ -23,6 +24,12 @@ struct Velocity
 {
   float x = 0.0f;
   float y = 0.0f;
+};
+
+struct PhysicsBody
+{
+  b2BodyId bodyId;
+  Vector2 size;
 };
 
 struct Sprite

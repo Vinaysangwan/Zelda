@@ -8,3 +8,6 @@ constexpr const int WINDOW_HEIGHT =  720;
 constexpr const int FPS = 120;
 constexpr const int UPS = 60;
 constexpr const float UPS_TIME = 1.0f / UPS;
+
+// Physics
+constexpr const float PIXEL_PER_METER = 30.0f;

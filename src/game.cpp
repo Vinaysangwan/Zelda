@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "assetManager.hpp"
 #include "systems.hpp"
+#include "physics.hpp"
 
 // #############################################################################
 //                           Functions
@@ -10,6 +11,20 @@
 void game_init(GameState *gameState)
 {
   entt::registry& reg = gameState->reg;
+
+  // init debug
+  {
+    gameState->debug = true;
+  }
+
+  // init physics world
+  {
+    b2SetLengthUnitsPerMeter(PIXEL_PER_METER);
+    
+    b2WorldDef worldDef = b2DefaultWorldDef();
+    worldDef.gravity = {0, 500.0f};
+    gameState->physicsWorldId = b2CreateWorld(&worldDef);
+  }
 
   // init background
   {
@@ -26,35 +41,31 @@ void game_init(GameState *gameState)
     entt::entity &player = gameState->player;
 
     player = reg.create();
-    reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_DOWN));
+    const Sprite& sprite = reg.emplace<Sprite>(player, get_sprite(SPRITE_PLAYER_DOWN));
     reg.emplace<GameLayerTag>(player);
-    reg.emplace<Transform2D>(player, Transform2D{
+    const Transform2D& trans = reg.emplace<Transform2D>(player, Transform2D{
       .pos = {100, 100},
       .scale = {4, 4}
     });
-    reg.emplace<Velocity>(player, 2, 2);
+
+    reg.emplace<PhysicsBody>(player, create_rect_body(
+      gameState->physicsWorldId, b2_dynamicBody, {trans.pos.x, trans.pos.y},
+      sprite.rect.width * trans.scale.x, sprite.rect.height * trans.scale.y
+    ));
   }
 
-  // init example entity
+  // init ground
   {
-    entt::entity example = reg.create();
-    reg.emplace<Sprite>(example, get_sprite(SPRITE_PLAYER_UP));
-    reg.emplace<GameLayerTag>(example);
-    reg.emplace<Transform2D>(example, Transform2D{
-      .pos = {50, 50},
-      .scale = {4, 4}
-    });
-    reg.emplace<Velocity>(example, 1, 1);
-  }
+    entt::entity ground = reg.create();
+    // reg.emplace<GameLayerTag>(ground);
+    // const Transform2D &trans = reg.emplace<Transform2D>(ground, Transform2D{
+    //   .pos = {100, 300},
+    // });
 
-  // init bird
-  {
-    entt::entity bird = reg.create();
-    reg.emplace<Sprite>(bird, get_sprite(SPRITE_BIRD));
-    reg.emplace<GameLayerTag>(bird);
-    reg.emplace<Transform2D>(bird, Transform2D{
-      .pos = {100, 100}
-    });
+    reg.emplace<PhysicsBody>(ground, create_rect_body(
+      gameState->physicsWorldId, b2_staticBody, {100, 400},
+      300, 100
+    ));
   }
 
   // init game camera
@@ -72,6 +83,22 @@ void game_init(GameState *gameState)
   }
 }
 
+void game_handle_key_pressed(GameState *gameState)
+{
+  if (IsKeyPressed(KEY_D))
+  {
+    gameState->debug = !gameState->debug;
+  }
+
+  // jump
+  if (IsKeyPressed(KEY_SPACE))
+  {
+    PhysicsBody &body = gameState->reg.get<PhysicsBody>(gameState->player);
+    float jumpForce = -40000 * PIXEL_PER_METER;
+    b2Body_ApplyLinearImpulseToCenter(body.bodyId, {0, jumpForce}, true);
+  }
+}
+
 void game_update(GameState *gameState, float dt)
 {
   entt::registry &reg = gameState->reg;
@@ -80,50 +107,39 @@ void game_update(GameState *gameState, float dt)
   {
     entt::entity &player = gameState->player;
     Sprite& playerSprite = reg.get<Sprite>(player);
-    Velocity &playerVel = reg.get<Velocity>(player);
+    PhysicsBody &body = reg.get<PhysicsBody>(player);
 
-    playerVel.x = 0.0f;
-    playerVel.y = 0.0f;
-    
-    if (IsKeyDown(KEY_W))
+    float forwardForce = 40000 * PIXEL_PER_METER;
+
+    if (IsKeyDown(KEY_UP))
     {
-      playerVel.y = -2;
       playerSprite = get_sprite(SPRITE_PLAYER_UP);
     }
-    if (IsKeyDown(KEY_S))
+    if (IsKeyDown(KEY_DOWN))
     {
-      playerVel.y = 2;
       playerSprite = get_sprite(SPRITE_PLAYER_DOWN);
     }
-    if (IsKeyDown(KEY_A))
+    if (IsKeyDown(KEY_LEFT))
     {
-      playerVel.x = -2;
       playerSprite = get_sprite(SPRITE_PLAYER_LEFT);
+      b2Body_ApplyForceToCenter(body.bodyId, {-forwardForce, 0}, true);
     }
-    if (IsKeyDown(KEY_D))
+    if (IsKeyDown(KEY_RIGHT))
     {
-      playerVel.x = 2;
       playerSprite = get_sprite(SPRITE_PLAYER_RIGHT);
+      b2Body_ApplyForceToCenter(body.bodyId, {forwardForce, 0}, true);
     }
+
+    b2Vec2 position = b2Body_GetPosition(body.bodyId);
+    b2Rot rotation = b2Body_GetRotation(body.bodyId);
+    printf("%4.2f %4.2f %4.2f\n", position.x, position.y, b2Rot_GetAngle(rotation));
   }
 
-  // update example
-  {
-    Velocity &exampleVel = reg.get<Velocity>(entt::entity(2));
-    Vector2 &examplePos = reg.get<Transform2D>(entt::entity(2)).pos;
+  // update physics world
+  b2World_Step(gameState->physicsWorldId, dt, 4);
 
-    if (examplePos.x <= 0 || examplePos.x >= 200)
-    {
-      exampleVel.x *= -1;
-    }
-    if (examplePos.y <= 0 || examplePos.y >= 100)
-    {
-      exampleVel.y *= -1;
-    }
-  }
-
-  // move entities
-  movement_system(reg);
+  // update entity physics
+  update_entity_physics(reg);
 
   // update camera
   {
@@ -141,7 +157,12 @@ void game_render(GameState *gameState)
   BeginMode2D(gameState->gameCamera);
   {
     // render entities
-    render_system(reg);
+    render_entities(reg);
+
+    if (gameState->debug)
+    {
+      render_debug_colliders(reg);
+    }
   }
   EndMode2D();
 }
